@@ -1,0 +1,33 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    env_file:
+      - environments/postgres.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  web:
+    build:
+      context: ./django_for_quizlet_app
+    command: python manage.py migrate && python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./django_for_quizlet_app:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  bot:
+    build:
+      context: ./quizlet_bot
+    env_file:
+      - environments/bot.env
+    depends_on:
+      - db
+      - web
+
+volumes:
+  postgres_data:
